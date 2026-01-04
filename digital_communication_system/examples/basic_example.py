@@ -14,7 +14,9 @@ This script shows the basic usage of the py5g_phy_comm package, including:
 # Add the current directory to Python path so we can import the package
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(parent_dir)
 
 # Import the create_system function from the py5g_phy_comm package
 from py5g_phy_comm import create_system

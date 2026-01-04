@@ -6,16 +6,11 @@ Test script for the 5G Physical Layer Communication System.
 import sys
 import os
 
-# Add the current directory to the Python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add the parent directory to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Now import the module
-try:
-    from 5g_phy_comm import run_simple_test, create_system
-    print("Successfully imported 5g_phy_comm module!")
-except ImportError as e:
-    print(f"Error importing 5g_phy_comm module: {e}")
-    sys.exit(1)
+from py5g_phy_comm import run_simple_test, create_system
+    
 
 
 def test_simple_system():

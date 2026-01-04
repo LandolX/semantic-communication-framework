@@ -8,8 +8,8 @@ import os
 import numpy as np
 import argparse
 
-# 添加当前目录到Python路径
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(parent_dir)
 
 from py5g_phy_comm import create_system
 
