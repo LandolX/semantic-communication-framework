@@ -51,6 +51,9 @@ def demo_specific_configuration(modulation_type, channel_type, snr_dB):
     print(f"\nReceived data: {received_data}")
     print(f"Bit Error Rate (BER): {ber:.6f}")
     print(f"Data match: {test_data == received_data}")
+    
+    # 显示星座图
+    system.visualize_constellation(title=f'{modulation_type.upper()} Constellation - {channel_type.upper()} Channel, SNR={snr_dB} dB')
 
 
 def demo_basic_usage():
@@ -79,6 +82,9 @@ def demo_basic_usage():
     print(f"\nReceived data: {received_data}")
     print(f"Bit Error Rate (BER): {ber:.6f}")
     print(f"Data match: {test_data == received_data}")
+    
+    # 显示星座图
+    system.visualize_constellation(title='Basic Usage - QPSK Constellation')
 
 
 def demo_different_modulations():
@@ -95,7 +101,7 @@ def demo_different_modulations():
     test_data = b"Testing different modulations"
     
     # 测试的调制类型
-    modulation_types = ['bpsk', 'qpsk', '16qam', '64qam']
+    modulation_types = ['bpsk', 'qpsk', '16qam', '64qam', '256qam']
     
     for mod_type in modulation_types:
         # 设置调制类型
@@ -107,6 +113,9 @@ def demo_different_modulations():
         print(f"\n{mod_type.upper()}")
         print(f"  BER: {ber:.6f}")
         print(f"  Match: {test_data == received_data}")
+        
+        # 显示星座图
+        system.visualize_constellation(title=f'{mod_type.upper()} Constellation - AWGN Channel, SNR=20 dB')
 
 
 def demo_different_channels():
@@ -135,6 +144,9 @@ def demo_different_channels():
         print(f"\n{chan_type.upper()} Channel")
         print(f"  BER: {ber:.6f}")
         print(f"  Match: {test_data == received_data}")
+        
+        # 显示星座图
+        system.visualize_constellation(title=f'QPSK Constellation - {chan_type.upper()} Channel, SNR=25 dB')
 
 
 def demo_snr_effect():
@@ -163,6 +175,9 @@ def demo_snr_effect():
         print(f"\nSNR = {snr} dB")
         print(f"  BER: {ber:.6f}")
         print(f"  Match: {test_data == received_data}")
+        
+        # 显示星座图
+        system.visualize_constellation(title=f'QPSK Constellation - AWGN Channel, SNR={snr} dB')
 
 
 def demo_ofdm_usage():
@@ -193,6 +208,9 @@ def demo_ofdm_usage():
     print(f"\n接收数据: {received_data}")
     print(f"误码率: {ber:.6f}")
     print(f"数据匹配: {test_data == received_data}")
+    
+    # 显示星座图
+    system.visualize_constellation(title='OFDM System - QPSK Constellation, AWGN Channel, SNR=15 dB')
 
 
 def main():
@@ -203,7 +221,7 @@ def main():
     parser = argparse.ArgumentParser(description='5G Physical Layer Communication System Demo')
     
     # 添加命令行参数
-    parser.add_argument('--modulation', '-m', choices=['bpsk', 'qpsk', '16qam', '64qam'],
+    parser.add_argument('--modulation', '-m', choices=['bpsk', 'qpsk', '16qam', '64qam', '256qam'],
                         help='Specify modulation type for specific configuration demo')
     parser.add_argument('--channel', '-c', choices=['awgn', 'rayleigh', 'rician'],
                         help='Specify channel type for specific configuration demo')

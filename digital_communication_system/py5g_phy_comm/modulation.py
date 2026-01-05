@@ -120,14 +120,38 @@ class Modem:
             symbol = complex(real, imag)
         
         elif self.modulation_type == '16qam':
-            # 16-QAM modulation
-            a = 1 - 2 * bits[0]
-            b = 1 - 2 * bits[1]
-            c = 1 - 2 * bits[2]
-            d = 1 - 2 * bits[3]
+            # 16-QAM modulation - 正确的Gray码映射，生成16个不同的星座点
+            # 第0位和第2位控制实部，第1位和第3位控制虚部
+            # 生成4个不同的实部和虚部值：±1, ±3
+            bit0 = bits[0]
+            bit1 = bits[1]
+            bit2 = bits[2]
+            bit3 = bits[3]
             
-            real = a * (2 - c)
-            imag = b * (2 - d)
+            # 实部计算
+            if bit0 == 0:
+                if bit2 == 0:
+                    real = 1
+                else:
+                    real = 3
+            else:
+                if bit2 == 0:
+                    real = -1
+                else:
+                    real = -3
+            
+            # 虚部计算
+            if bit1 == 0:
+                if bit3 == 0:
+                    imag = 1
+                else:
+                    imag = 3
+            else:
+                if bit3 == 0:
+                    imag = -1
+                else:
+                    imag = -3
+            
             symbol = complex(real, imag)
         
         elif self.modulation_type == '64qam':
@@ -274,14 +298,54 @@ class Modem:
             scaled_real = symbol.real * self.normalization
             scaled_imag = symbol.imag * self.normalization
             
-            bit0 = 0 if scaled_real > 0 else 1
-            bit1 = 0 if scaled_imag > 0 else 1
-            bit2 = 0 if abs(scaled_real) < 8 else 1
-            bit3 = 0 if abs(scaled_imag) < 8 else 1
-            bit4 = 0 if abs(scaled_real) < 4 else 1
-            bit5 = 0 if abs(scaled_imag) < 4 else 1
-            bit6 = 0 if abs(scaled_real) < 2 else 1
-            bit7 = 0 if abs(scaled_imag) < 2 else 1
+            # 256QAM星座点幅度值为±1, ±3, ±5, ±7, ±9, ±11, ±13, ±15（归一化前）
+            # 硬解调：直接根据幅度值计算对应的比特
+            
+            # 首先确定符号位
+            bit0 = 0 if scaled_real > 0 else 1  # 实部符号位
+            bit1 = 0 if scaled_imag > 0 else 1  # 虚部符号位
+            
+            # 计算归一化前的幅度值
+            abs_real = abs(scaled_real)
+            abs_imag = abs(scaled_imag)
+            
+            # 为256QAM创建一个精确的幅度到比特映射表
+            # 键：幅度值（归一化前）
+            # 值：(bit_c, bit_e, bit_g)
+            magnitude_map = {
+                1: (0, 1, 1),   # bit2=0, bit4=1, bit6=1
+                3: (0, 1, 0),   # bit2=0, bit4=1, bit6=0
+                5: (0, 0, 0),   # bit2=0, bit4=0, bit6=0
+                7: (0, 0, 1),   # bit2=0, bit4=0, bit6=1
+                9: (1, 0, 1),   # bit2=1, bit4=0, bit6=1
+                11: (1, 0, 0),  # bit2=1, bit4=0, bit6=0
+                13: (1, 1, 0),  # bit2=1, bit4=1, bit6=0
+                15: (1, 1, 1)    # bit2=1, bit4=1, bit6=1
+            }
+            
+            # 查找最接近的幅度值
+            def get_closest_magnitude(abs_value):
+                """
+                查找最接近的幅度值
+                """
+                closest_mag = None
+                min_diff = float('inf')
+                
+                for mag in magnitude_map.keys():
+                    diff = abs(abs_value - mag)
+                    if diff < min_diff:
+                        min_diff = diff
+                        closest_mag = mag
+                
+                return closest_mag
+            
+            # 确定实部的其他比特
+            closest_real = get_closest_magnitude(abs_real)
+            bit2, bit4, bit6 = magnitude_map[closest_real]
+            
+            # 确定虚部的其他比特
+            closest_imag = get_closest_magnitude(abs_imag)
+            bit3, bit5, bit7 = magnitude_map[closest_imag]
             
             return np.array([bit0, bit1, bit2, bit3, bit4, bit5, bit6, bit7])
     

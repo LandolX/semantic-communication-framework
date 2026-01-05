@@ -1,13 +1,24 @@
-# 图像预处理模块 (Image Preprocessing Module)
+# 图像处理模块 (Image Processing Module)
 
-一个用于图像预处理的Python模块，提供标准和自定义的图像预处理功能。
+用于图像编码和分块编码的Python模块，支持多种图像编码方式和通用的分块编码功能。
+
+## 功能特性
+
+- ✨ 支持多种图像编码方式（JPEG, JPEG2000, JPEG2000BGR）
+- 📦 实现了通用的分块编码（block_codec）
+- 🎯 支持FEC编码策略
+- 📁 模块化设计，易于集成
 
 ## 目录结构
 
 ```
 image_process/
-├── image_preprocessor.py     # 预处理核心实现
-├── test_image_process.py     # 测试脚本，验证预处理功能
+├── baseline/                 # 基线编码实现
+│   ├── jpeg/                 # JPEG编码实现
+│   ├── jpeg2000/            # JPEG2000编码实现
+│   └── jpeg2000bgr/          # JPEG2000BGR编码实现
+├── block_codec/              # 分块编码实现
+│   └── block_codec.py       # 通用分块编码核心实现
 └── README.md                 # 本文件
 ```
 
@@ -15,102 +26,94 @@ image_process/
 
 ```bash
 pip install pillow numpy
+# JPEG2000支持
+pip install pyj2k
 ```
 
 ## 使用方法
 
-### 1. 导入模块
+### 1. 使用图像编码器
 
 ```python
-from image_preprocessor import preprocess_image, preprocess_image_custom
+# 导入JPEG编码器
+from image_process.baseline.jpeg.jpeg_encoder import JPEGEncoder
 from PIL import Image
-```
-
-### 2. 加载并预处理图像
-
-```python
-# 方法1: 使用标准预处理
-from PIL import Image
-import os
 
 # 加载图像
-image_path = "path/to/your/image.jpg"
-img = Image.open(image_path)
+img = Image.open("path/to/your/image.jpg")
 
-# 标准预处理
-preprocessed_img = preprocess_image(img)
-print(f"预处理后图像形状: {preprocessed_img.shape}")  # (1, 224, 224, 1)
+# 初始化编码器（支持分块编码）
+encoder = JPEGEncoder(quality=90, use_block_codec=True)
 
-# 方法2: 使用自定义预处理
-custom_preprocessed_img = preprocess_image_custom(
-    img, 
-    target_size=(256, 256),  # 自定义尺寸
-    normalize=True,          # 归一化
-    expand_dims=True         # 扩展维度
-)
-print(f"自定义预处理后图像形状: {custom_preprocessed_img.shape}")  # (1, 256, 256, 1)
+# 编码图像
+data = encoder.encode_image(img)
+print(f"编码后数据大小: {len(data)} bytes")
 ```
 
-### 3. 与数据输入模块配合使用
+### 2. 使用分块编码
 
 ```python
-# 导入数据输入模块
-from data_input.image_loader import load_images_from_dir
-# 导入预处理模块（同一目录）
-from image_preprocessor import preprocess_image
-import os
+# 导入分块编码器
+from image_process.block_codec.block_codec import BlockCodec
 
-# 获取当前文件所在目录
-current_dir = os.path.dirname(os.path.abspath(__file__))
-# 获取项目根目录
-project_root = os.path.dirname(current_dir)
+# 初始化分块编码器
+codec = BlockCodec(block_size=1024, fec_strategy='repetition', fec_level=2)
 
-# 加载原始图像（相对路径）
-image_dir = os.path.join(project_root, 'data_input', 'image')
-original_images = load_images_from_dir(image_dir)
+# 对数据进行分块编码
+encoded_data = codec.encode(b"your_data", codec_type='jpeg')
+print(f"分块编码后数据大小: {len(encoded_data)} bytes")
 
-# 对每张图像进行预处理
-for i, img in enumerate(original_images):
-    # 转换为PIL Image对象
-    from PIL import Image
-    pil_img = Image.fromarray(img)
-    
-    # 进行预处理
-    preprocessed_img = preprocess_image(pil_img)
-    print(f"图像 {i+1}: 原始形状 = {img.shape}, 预处理后形状 = {preprocessed_img.shape}")
-    
-    if i >= 2:  # 只处理前3张
-        break
+# 解码分块数据
+decoded_data = codec.decode(encoded_data, codec_type='jpeg')
+print(f"解码后数据: {decoded_data}")
 ```
 
 ## API 说明
 
-### 1. `preprocess_image(image)`
-- **功能**：标准图像预处理流程
-- **参数**：`image` - PIL Image对象
-- **返回**：预处理后的图像数组
-- **预处理步骤**：
-  1. 转换为灰度图
-  2. 调整为统一尺寸 (224x224)
-  3. 归一化到 [0, 1] 范围
-  4. 添加批次和通道维度 (形状: (1, 224, 224, 1))
+### 1. 图像编码器
 
-### 2. `preprocess_image_custom(image, target_size=(224, 224), normalize=True, expand_dims=True)`
-- **功能**：自定义图像预处理
+#### JPEGEncoder
+- **功能**：JPEG图像编码
 - **参数**：
-  - `image` - PIL Image对象
-  - `target_size` - 目标尺寸，默认为(224, 224)
-  - `normalize` - 是否归一化，默认为True
-  - `expand_dims` - 是否扩展维度，默认为True
-- **返回**：预处理后的图像数组
+  - `quality` - 编码质量 (0-100)
+  - `use_block_codec` - 是否使用分块编码
+- **方法**：
+  - `encode_image(image)` - 编码图像
+
+#### JPEG2000Encoder
+- **功能**：JPEG2000图像编码
+- **参数**：
+  - `quality` - 编码质量 (0-100)
+  - `use_block_codec` - 是否使用分块编码
+- **方法**：
+  - `encode_image(image)` - 编码图像
+
+#### JPEG2000BGREncoder
+- **功能**：JPEG2000BGR图像编码
+- **参数**：
+  - `quality` - 编码质量 (0-100)
+  - `use_block_codec` - 是否使用分块编码
+- **方法**：
+  - `encode_image(image)` - 编码图像
+
+### 2. 分块编码器
+
+#### BlockCodec
+- **功能**：通用分块编码，支持FEC
+- **参数**：
+  - `block_size` - 块大小
+  - `fec_strategy` - FEC策略 ('repetition'等)
+  - `fec_level` - FEC级别
+- **方法**：
+  - `encode(data, codec_type)` - 分块编码数据
+  - `decode(encoded_data, codec_type)` - 分块解码数据
 
 ## 扩展建议
 
-1. **添加数据增强**：在预处理流程中添加旋转、翻转、缩放等数据增强操作
-2. **支持彩色图像**：扩展预处理功能，支持彩色图像的预处理
-3. **添加多种预处理策略**：根据不同任务需求，提供多种预处理策略
-4. **优化性能**：添加并行处理，提高批量图像处理效率
-5. **添加图像验证**：在预处理前添加图像质量验证
+1. **添加更多编码方式**：支持更多图像编码格式
+2. **增强FEC策略**：添加更多FEC编码策略
+3. **优化分块算法**：提高分块编码的效率
+4. **添加编码质量评估**：评估不同编码方式的质量和性能
 
 ## 许可证
 

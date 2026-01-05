@@ -65,6 +65,7 @@ result = run_simple_test(
 - `qpsk`：正交相移键控
 - `16qam`：16正交振幅调制
 - `64qam`：64正交振幅调制
+- `256qam`：256正交振幅调制
 
 ```python
 # 切换调制方式
@@ -91,6 +92,15 @@ system.set_channel_type('rayleigh')
 ```python
 # 设置SNR为20 dB
 system.set_snr_dB(20)
+```
+
+### 星座图可视化
+
+支持星座图可视化，显示发送和接收符号的星座分布：
+
+```python
+# 可视化星座图
+system.visualize_constellation(title='QPSK Constellation - AWGN Channel, SNR=20 dB')
 ```
 
 ## 更复杂的使用示例

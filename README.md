@@ -13,7 +13,6 @@ semantic-communication-workplace/
 ├── data_input/                   # 数据输入模块
 │   ├── image/                    # 图像文件目录
 │   ├── image_loader.py           # 图像加载核心实现
-│   ├── usage_example.py          # 使用示例
 │   └── README.md                 # 模块说明文档
 ├── digital_communication_system/  # 数字通信系统模块
 │   ├── examples/                 # 示例代码
@@ -23,13 +22,16 @@ semantic-communication-workplace/
 │   └── requirements.txt          # 依赖列表
 ├── image_process/                # 图像处理模块
 │   ├── baseline/                 # 基线编码实现
-│   │   └── jpeg_encoder.py       # JPEG编码核心实现
-│   ├── image_preprocessor.py     # 图像预处理实现
-│   ├── test_image_process.py     # 测试脚本
+│   │   ├── jpeg/                 # JPEG编码实现
+│   │   ├── jpeg2000/            # JPEG2000编码实现
+│   │   └── jpeg2000bgr/          # JPEG2000BGR编码实现
+│   ├── block_codec/              # 分块编码实现
 │   └── README.md                 # 模块说明文档
 ├── image_recover/                # 图像恢复模块
 │   ├── baseline/                 # 基线解码实现
-│   │   └── jpeg_decoder.py       # JPEG解码核心实现
+│   │   ├── jpeg/                 # JPEG解码实现
+│   │   ├── jpeg2000/            # JPEG2000解码实现
+│   │   └── jpeg2000bgr/          # JPEG2000BGR解码实现
 │   └── README.md                 # 模块说明文档
 ├── output/                       # 输出目录，存储恢复的图像
 ├── README.md                     # 项目说明文档
@@ -44,25 +46,27 @@ semantic-communication-workplace/
 - 提供简洁易用的API接口
 
 ### 2. 图像处理模块 (image_process)
-- 提供图像预处理功能
-- 基线JPEG编码实现
-- 支持FEC编码和数据交织
+- 支持多种图像编码方式（JPEG, JPEG2000, JPEG2000BGR）
+- 实现了通用的分块编码（block_codec）支持
+- 支持FEC编码策略
 
 ### 3. 数字通信系统模块 (digital_communication_system)
 - 5G物理层通信系统仿真
-- 支持多种调制方式（BPSK, QPSK, 16QAM, 64QAM）
+- 支持多种调制方式（BPSK, QPSK, 16QAM, 64QAM, 256QAM）
 - 支持多种信道模型（AWGN, Rayleigh, Rician）
 - 提供误码率计算
+- 支持星座图可视化
 
 ### 4. 图像恢复模块 (image_recover)
-- 基线JPEG解码实现
-- 容错机制，支持从受损数据中恢复图像
-- 黑色区域修复
-- FEC编码移除
+- 支持多种图像解码方式（JPEG, JPEG2000, JPEG2000BGR）
+- 支持从受损数据中恢复图像
+- 支持分块解码
 
 ### 5. 基线流程 (baseline)
 - 传统编码baseline完整流程
-- 从图像输入到JPEG编码，到信道物理层传输，再到解码恢复
+- 支持多种图像编码方式和调制方式
+- 从图像输入到编码，到信道物理层传输，再到解码恢复
+- 支持星座图可视化
 
 ## 安装依赖
 
@@ -85,77 +89,53 @@ cd ..
 python3 baseline/baseline_pipeline.py
 ```
 
-### 2. 单独使用各模块
+### 2. 带星座图可视化的基线流程
 
 ```python
-# 示例：数据输入 -> 图像处理 -> 通信系统 -> 图像恢复
+# 带星座图可视化的baseline_pipeline使用示例
+from baseline.baseline_pipeline import run_baseline_pipeline
 
-from data_input.image_loader import load_images_from_dir
-from image_process.baseline.jpeg_encoder import JPEGEncoder
-from image_recover.baseline.jpeg_decoder import JPEGDecoder
-from digital_communication_system.py5g_phy_comm import create_system
-from PIL import Image
-import os
-
-# 获取项目根目录
-project_root = os.path.dirname(os.path.abspath(__file__))
-
-# 1. 加载图像
-image_dir = os.path.join(project_root, 'data_input', 'image')
-images = load_images_from_dir(image_dir)
-
-# 2. 初始化编码器和解码器
-encoder = JPEGEncoder(quality=90)
-decoder = JPEGDecoder()
-
-# 3. 初始化通信系统
-system = create_system(
-    use_simple=True,
-    modulation_type='qpsk',
-    snr_dB=14,
-    channel_type='awgn'
+run_baseline_pipeline(
+    image_path='path/to/image.jpg',
+    output_path='path/to/output.jpg',
+    compression_type='jpeg2000',
+    modulation_type='16qam',
+    snr_dB=20,
+    channel_type='awgn',
+    visualize_constellation=True  # 启用星座图可视化
 )
+```
 
-# 4. 处理图像
-for i, img_np in enumerate(images):
-    # 转换为PIL Image
-    img = Image.fromarray(img_np)
-    
-    # JPEG编码
-    jpeg_data = encoder.encode_image(img)
-    
-    # 通信系统传输
-    received_data, ber = system.transmit_receive(jpeg_data)
-    
-    # JPEG解码
-    recovered_image = decoder.decode_image(received_data, return_type='pil', default_size=img.size)
-    
-    # 保存恢复的图像
-    output_path = os.path.join(project_root, 'output', f'recovered_{i}.jpg')
-    recovered_image.save(output_path)
-    
-    print(f"处理完成第{i+1}张图像，误码率: {ber:.6f}")
-    if i >= 2:  # 只处理前3张
-        break
+### 3. 运行数字通信系统示例
+
+```bash
+# 运行16QAM调制的通信系统示例
+python3 digital_communication_system/examples/demo.py -m 16qam -c awgn -s 20
 ```
 
 ## 核心 API
 
 ### 数据输入模块
 - `load_images_from_dir(image_dir)`: 加载指定目录下的所有图像
-- `get_image_loader(image_dir)`: 获取图像加载器实例
 
 ### 图像处理模块
-- `preprocess_image(image)`: 标准图像预处理
-- `preprocess_image_custom(image, target_size=(224, 224), normalize=True, expand_dims=True)`: 自定义图像预处理
-- `JPEGEncoder.encode_image(image)`: 将图像编码为JPEG格式
+- 支持多种编码器：`JPEGEncoder`, `JPEG2000Encoder`, `JPEG2000BGREncoder`
+- `encoder.encode_image(image)`: 将图像编码为指定格式
+- 支持自定义编码质量和分块编码选项
 
 ### 图像恢复模块
-- `JPEGDecoder.decode_image(framed_data, return_type='pil', default_size=(776, 776))`: 解码JPEG数据
+- 支持多种解码器：`JPEGDecoder`, `JPEG2000Decoder`, `JPEG2000BGRDecoder`
+- `decoder.decode_image(data, return_type='pil', default_size=None)`: 解码图像数据
 
 ### 数字通信系统
 - `create_system(use_simple=True, modulation_type='qpsk', snr_dB=15, channel_type='awgn')`: 创建通信系统
 - `system.transmit_receive(data)`: 传输和接收数据
+- `system.visualize_constellation(title=None)`: 可视化星座图
+
+### 分块编码
+- `BlockCodec.encode(data, codec_type)`: 对数据进行分块编码
+- `BlockCodec.decode(encoded_data, codec_type)`: 对数据进行分块解码
+- 支持多种FEC编码策略
 
 ## 测试与验证
 

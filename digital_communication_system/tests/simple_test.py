@@ -7,8 +7,8 @@ import sys
 import os
 import numpy as np
 
-# Add the current directory to Python path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add the parent directory to Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Try a different import approach
 print("Attempting to import components...")
