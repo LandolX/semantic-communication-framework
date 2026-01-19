@@ -158,6 +158,10 @@ python3 tests/simple_test.py
 python3 image_process/test_image_process.py
 ```
 
+###语义分割模块
+<img width="1858" height="671" alt="语义分割流程图" src="https://github.com/user-attachments/assets/923fe153-17f4-4947-84f5-f15860566318" />
+
+
 ## 许可证
 
 本项目采用 MIT 许可证。
