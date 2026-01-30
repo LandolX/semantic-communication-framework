@@ -17,23 +17,23 @@ __pycache__/
 *.tmp
 *.temp
 
-# 数据文件和图像文件
-*.png
-*.jpg
-*.jpeg
-*.bmp
-*.gif
-*.tiff
-
-# 数据输入目录
+# 数据输入目录下的图像文件
 data_input/image/
 
 # 输出目录
 output/
 
 # 评估结果
-evaluation/*.png
 evaluation/*.txt
+
+# 根目录下的测试文件
+compare_polar_evaluations.py
+plot_coding_comparison.py
+plot_polar_performance.py
+plot_snr_performance.py
+test_polar_coding.py
+test_snr_performance.py
+run_baseline.py
 
 # 数字通信系统测试缓存
 .pytest_cache/
