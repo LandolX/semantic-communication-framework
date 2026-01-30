@@ -53,12 +53,6 @@ semantic-communication-workplace/
 ├── output/                       # 输出目录，存储恢复的图像
 │   └── snr_test/                 # SNR测试结果
 ├── README.md                     # 项目说明文档
-├── compare_polar_evaluations.py  # 极化码评估比较
-├── plot_coding_comparison.py     # 编码方案比较绘图
-├── plot_polar_performance.py     # 极化码性能绘图
-├── plot_snr_performance.py       # SNR性能绘图
-├── test_polar_coding.py          # 极化码测试
-├── test_snr_performance.py       # SNR性能测试
 └── venv/                         # Python虚拟环境
 ```
 
@@ -200,7 +194,6 @@ python3 digital_communication_system/examples/demo.py -m 16qam -c awgn -s 20
 ### 评估模块
 - `EvaluationMain.run_evaluation()`: 运行编码方案评估
 - `GenerateCharts.plot_performance()`: 生成性能比较图表
-- `test_snr_performance()`: 测试SNR性能
 
 ## 测试与验证
 
@@ -223,17 +216,7 @@ python3 tests/test_system.py
 python3 -m pytest image_process/common/tests/
 ```
 
-### 测试极化码编码
 
-```bash
-python3 test_polar_coding.py
-```
-
-### 测试SNR性能
-
-```bash
-python3 test_snr_performance.py
-```
 
 ### 运行评估模块
 
