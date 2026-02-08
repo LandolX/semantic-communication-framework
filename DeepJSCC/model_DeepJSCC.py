@@ -52,16 +52,18 @@ class ResBlock(nn.Module):
         super(ResBlock, self).__init__()
         self.conv1 = nn.Conv2d(channels, channels, kernel_size=3, padding=1)
         self.bn1 = nn.BatchNorm2d(channels)
-        self.prelu = nn.PReLU()
+        self.prelu1 = nn.PReLU()  
+        
         self.conv2 = nn.Conv2d(channels, channels, kernel_size=3, padding=1)
         self.bn2 = nn.BatchNorm2d(channels)
+        self.prelu2 = nn.PReLU()  
 
     def forward(self, x):
         residual = x
-        out = self.prelu(self.bn1(self.conv1(x)))
+        out = self.prelu1(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
         out += residual
-        return self.prelu(out)
+        return self.prelu2(out)
 
 
 class DeepJSCC(nn.Module):
@@ -90,10 +92,10 @@ class DeepJSCC(nn.Module):
 
         # --- Decoder ---
         self.decoder_head = nn.Sequential(
-            nn.ConvTranspose2d(self.C_out, 64, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(self.C_out, 64, kernel_size=3, stride=1, padding=1),
             nn.PReLU(),
             nn.BatchNorm2d(64)
-        )
+            )
         self.decoder_body = nn.Sequential(
             ResBlock(64),
             ResBlock(64),
@@ -104,7 +106,7 @@ class DeepJSCC(nn.Module):
             nn.ConvTranspose2d(64, 64, kernel_size=3, stride=2, padding=1, output_padding=1),
             nn.PReLU(),
             nn.Conv2d(64, in_channels, kernel_size=3, stride=1, padding=1),
-            nn.Sigmoid()  # 确保你的数据 Target 也是 [0, 1] 范围
+            nn.Sigmoid()  
         )
 
     def power_normalize(self, feature):
